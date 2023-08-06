@@ -1,0 +1,48 @@
+#sketchpad {
+    margin: auto;
+    width: 100%;
+    height: 761px;
+    background-repeat: repeat;
+    margin-right: 1px;
+    margin-left: 1px;
+}
+
+.toolbar {
+  width: 100%;
+  min-width: 228px;
+  background-color: #fafafa;
+  text-align: center;
+  margin-right: 1px;
+  margin-left: 1px;
+
+  padding: 14px;
+  display: fit;
+}
+.toolbar .section {
+  clear:both;
+  margin-bottom: 8px;
+}
+.toolbar .slider {
+  width: 100%;
+}
+
+.toolbar .button {
+  float: left;
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.toolbar .button.active {
+  background-color: rgba(0, 0, 0, .5);
+  color: rgba(255, 255, 255, 1);
+}
+.container {
+  width: 100%;
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: 1px;
+  margin-left: 1px; 
+}

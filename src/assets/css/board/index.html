@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title> Whiteboard</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!-- Bootstrap core CSS -->
+<link href="https://v4-alpha.getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Font Awesome -->
+<script src="https://use.fontawesome.com/46af14eb3c.js"></script>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div class="toolbar" id="tools">
+        <div class="section files">
+          <div id="reset" class="button"><i class="fa fa-trash-o" aria-hidden="true"></i></div>
+          <div id="tool-save" class="button"><i class="fa fa-save" aria-hidden="true"></i></div>
+          <div id="tool-load" class="button"><i class="fa fa-folder-open-o" aria-hidden="true"></i></div>
+          <div id="tool-screenshot" class="button"><i class="fa fa-camera-retro" aria-hidden="true"></i></div>
+        </div>
+
+        <div class="section drawing">
+          <div id="tool-pen" class="button active"><i class="fa fa-pencil" aria-hidden="true"></i></div>
+          <div id="tool-highlighter" class="button"><i class="fa fa-paint-brush" aria-hidden="true"></i></div>
+          <div id="tool-rainbow" class="button rbw"><i class="fa fa-magic" aria-hidden="true"></i></div>
+          <div id="tool-mandala" class="button mandala"><i class="fa fa-snowflake-o" aria-hidden="true"></i></div>
+        </div>
+        <div class="section drawing">
+          <div id="tool-line" class="button line">╱</div>
+          <div id="tool-rectangle" class="button rect"><i class="fa fa-square-o" aria-hidden="true"></i></div>
+          <div id="tool-circle" class="button circ"><i class="fa fa-circle-thin" aria-hidden="true"></i></div>
+          <div id="tool-type" class="button font"><i class="fa fa-font" aria-hidden="true"></i></div>
+
+
+
+          <div class="section rubber">
+            <div id="tool-eraser" class="button"><i class="fa fa-eraser" aria-hidden="true"></i></div>
+            <div id="tool-cutout" class="button"><i class="fa fa-scissors" aria-hidden="true"></i></div>
+          </div>
+          <div class="section special">
+            <div id="tool-rotate-viewport" class="button rotate-viewport"><i class="fa fa-circle-o-notch" aria-hidden="true"></i></div>
+            <div id="tool-move-viewport" class="button move-viewport"><i class="fa fa-hand-paper-o" aria-hidden="true"></i></div>
+          </div>
+          <div class="section special">
+            <div id="tool-zoom-out" class="button"><i class="fa fa-search-minus" aria-hidden="true"></i></div>
+            <div id="tool-zoom-1" class="button"><i class="fa fa-home" aria-hidden="true"></i></div>
+            <div id="tool-zoom-in" class="button"><i class="fa fa-search-plus" aria-hidden="true"></i></div>
+          </div>
+          <div class="section special">
+            <div id="tool-fast-undo" class="button f-backward"><i class="fa fa-fast-backward" aria-hidden="true"></i></div>
+            <div id="tool-undo" class="button undo"><i class="fa fa-backward" aria-hidden="true"></i></div>
+            <div id="tool-redo" class="button redo"><i class="fa fa-forward" aria-hidden="true"></i></div>
+            <div id="tool-fast-redo" class="button f-forward"><i class="fa fa-fast-forward" aria-hidden="true"></i></div>
+          </div>
+          <div class="section special">
+            <hr>
+            <span id="toolName">Tool name</span>
+          </div>
+          <div id="size" class="section size">
+            <input class="slider" id="size-slider" type ="range" min ="1" max="20" step ="1" value ="1"/>
+          </div>
+
+          <div id="colorpaletteSection"  class="section colorpicker">
+            <div id="colorpalette" class="colorpalette"></div>
+          </div>
+          <div id="colorpaletteFillSection" class="section colorpicker">
+            <div id="colorpaletteFill" class="colorpalette"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-9">
+      <div id="sketchpad"></div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.sketchpad.pro/dist/current/sketchpad.min.js"></script>
+<!-- partial -->
+  <script  src="./script.js"></script>
+
+</body>
+</html>
