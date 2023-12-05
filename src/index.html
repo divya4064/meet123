@@ -5,21 +5,37 @@
 
         <meta content="width=device-width, initial-scale=1" name="viewport" />
 
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
-
-        <link rel='stylesheet' href='assets/css/app.css' type="text/css">
-
-        <link rel='stylesheet' href='assets/css/container.css' type="text/css">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
         <script src='/socket.io/socket.io.js'></script>
+        <link rel='stylesheet' href='assets/css/app.css' type="text/css">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+        <link rel='stylesheet' href='assets/css/container.css' type="text/css">
+        <link rel='stylesheet' href='assets/css/container1.css' type="text/css">
+       
         <script type="module" src='assets/js/rtc.js'></script>
+
+        <script  src='app.js'></script>
+        
+        
+        
         <script type="module" src='assets/js/events.js'></script>
         <script type="module" src='assets/js/container.js'></script>
+        <script type="module" src='assets/js/container1.js'></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/7.3.0/adapter.min.js" integrity="sha256-2qQheewaqnZlXJ3RJRghVUwD/3fD9HNqxh4C+zvgmF4=" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js'></script>
         <script src='https://cdn.rawgit.com/yahoo/xss-filters/master/dist/xss-filters.js'></script>
         <script src='assets/js/autolink.js'></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js"></script>
+       
+        
+        
+        
+
     </head>
 
     <body >
@@ -30,7 +46,7 @@
                     <button class="btn-md btn-info rounded-lg mr-4" id='record-video'>Record Video</button>
                     <button class="btn-md btn-info rounded-lg" id='record-screen'>Record Screen</button>
                 </div> 
-                <button class="btn-md btn-danger rounded-lg" id='closeModal'>close</button>
+                <button class="btn-md btn-danger rounded-lg" id='closeModal'>close it</button>
                 
                 
             </div>
@@ -44,7 +60,7 @@
                 </div>
 
             </div>
-
+            <!-- <div id="handRaiseContainer" class="btn btn-lg rounded-0 btn-outline-dark pull-right ml-auto mr-auto col-md-8" >hi</div> -->
             <div class="pull-right ml-auto mr-auto col-md-8 " style="padding-left: 80px;">
                     <button class="btn btn-lg rounded-0 btn-outline-dark" style="min-width:60px;" id='toggle-video' title="Hide Video">
                         <i class="fa fa-video text-white"></i>
@@ -53,6 +69,25 @@
                     <button class="btn btn-lg rounded-0 btn-outline-dark" style="min-width:60px;" id='toggle-mute' title="Mute">
                         <i class="fa fa-microphone-alt text-white"></i>
                     </button>
+                    <!--hand raise feature-->
+                    
+                    <button class="btn btn-lg rounded-0 btn-outline-dark" style="min-width:60px;" id="hand-raise" title="Raise Hand">
+                        <i class="fas fa-hand-paper text-white" aria-hidden="true"></i>
+                        
+                    </button>
+                    <!-- Hand Raise Notification Modal -->
+                    <div id="handRaiseModal" class="modal" >
+                        <div class="modal-content ">
+                            <div class="modal-header">
+                                <h2 id="modalTitle">My doubt</h2>
+                                <span id="closeModal" class="close">&times;</span>
+                            </div>
+                            <div class="modal-body">
+                                <p id="modalText">Someone has raised their hand.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
 
                     <button class="btn btn-lg rounded-0 btn-outline-dark" style="min-width:60px;" id='share-screen' title="Share screen">
                         <i class="fa fa-share text-white"></i>
@@ -76,8 +111,66 @@
                         src="assets/css/board/index.html ">
                     </iframe>
                  <button id="closeLinkButton">Close</button>
+                 <!---->
+ 
+                 <!---->
                  <!--redirect it to index.html-->
                   </div>
+                                  <!-- Add this button somewhere in your HTML -->
+<button   class=" btn btn-lg rounded-0 btn-outline-dark" data-backdrop="false" style="min-width:60px;" id='view-attendance' title="View Attendance">
+    <i class="fa fa-users text-white"></i>
+</button>
+
+<!-- Add this modal somewhere in your HTML -->
+<div id="attendance-modal" data-backdrop="false" >
+    <div class="modal-dialog1" data-backdrop="false">
+        <div class="modal-content1" data-backdrop="false">
+            <div class="modal-header1">
+                <h5 class="modal-title1">Meeting Attendance</h5>
+                <button type="button" id="download">Download PDF
+                </button>
+            </div>
+            <div class="modal-body1" id="attendance-list">
+                <!-- Attendance data will be inserted here -->
+            </div>
+            <div class="modal-footer1">
+                <button type="button"  id="attendance-close"  style="cursor: pointer;">Close</button>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+
+
+
+
+        
+                  <button id="openLinkButtonFile" class="btn btn-lg rounded-0 btn-outline-dark" style="min-width:40px;">
+                    <i class="fa fa-file text-white"></i>
+                </button>
+                
+                <div id="modalFile" class="hidden">
+                    <iframe id="inlineFrameExampleFile"
+                        title="Inline Frame Example"
+                        width="95%"
+                        height="100%">
+                    </iframe>
+                    <button id="closeLinkButtonFile">Close</button>
+                    <!-- File sharing -->
+                </div>
+                
+                <script>
+                    const openLinkButtonFile = document.getElementById('openLinkButtonFile');
+                    const iframe = document.getElementById('inlineFrameExampleFile');
+                
+                    openLinkButtonFile.addEventListener('click', function () {
+                        // Generate a unique timestamp query parameter to force a fresh request
+                        const timestamp = new Date().getTime();
+                        const src = `https://fileshare.onrender.com/?timestamp=${timestamp}`;
+                        iframe.src = src;
+                    });
+                </script> 
 
                 <button class="btn btn-lg rounded-0 btn-danger text-white" style="min-width:60px;">
                     <a href="/dashboard" class="text-white text-decoration-none"><i class="fa fa-sign-out-alt text-white" title="Leave"></i></a>
@@ -205,7 +298,7 @@
         <!-- Ends Here -->
 
         
-        <div class="container-fluid room-comm" hidden>
+        <div class="container-fluid room-comm" hidden style="bottom:50px">
             
             <div class="row">
                 <div class="col-md-12 main" id='main-section'>                    
@@ -217,19 +310,204 @@
                     </div>
                     
                 </div>
-
-                <div class="col-md-3  px-1 d-print-none mb-2 bg-white"style="border-radius:1%;margin-top:16px;" id='chat-pane' hidden>
-                   
+                 <!--ddddd-->
+                 <div class="col-md-3  px-1 d-print-none mb-2 bg-white" style="border-radius:1%;margin-top:16px;" id='chat-pane' hidden>
                     <div class="col-12 text-center h3 mb-3 mt-2">CHAT</div>
-
-                    <div id='chat-messages'></div>
-
-                    <div class="mr-auto ml-auto mb-2 input-group" >
-                        <input type="text" id='chat-input' class="form-control rounded-2 border-info" name="lname"placeholder="Type here...">
-                        <i class="fa my-2 mx-1 fa-paper-plane btn btn-outline-secondary btn-sm" aria-hidden="true" id="chat-icon-send"></i>
+                    <div id="private-chat-select-container">
+                        
+                        <button id="populate-list-button">Select Receiver </button>
+                            <select id="private-chat-select">
+                                <!-- Options will be populated dynamically -->
+                            </select>
+                            <select id="source-language-selection-top">
+                                <option value="en">Native Language</option>
+                                <option value="en">1. English</option>
+                                <option value="hi">2. हिंदी</option>
+                                
+                                <!-- Add more options as needed -->
+                            </select>
+                      
+                    
                     </div>
+                    <div id='chat-messages' style="bottom: margin 30px;"></div>
+                    <div class="mr-auto ml-auto mb-2 input-group">
+                        <label>        
+                            <input type="file" id="file" style="display: none;" onchange="selectFile(this.value)">   
+                            <i class="material-icons" style="font-size: 18px; color: #4f4f4f; float: left;
+                            margin-left: 10px; margin-top: 15px; transform: rotate(45deg); cursor: pointer;">&#xe226;</i> 
+                        </label>
+                        <input id="chat-input" type="text" class="form-control rounded-2 border-info" name="lname" placeholder="Type here ..."> 
+                        <!---->
+                        <!-- Source Language Selection -->
+        
+        <select id="source-language-selection">
+            <option value="en">1. English</option>
+            <option value="ar">2. العربية</option>
+            <option value="de">3. Deutsch</option>
+            <option value="fr">4. Français</option>
+            <option value="hi">5. हिंदी</option>
+            <option value="pt">6. Português</option>
+            <option value="ru">7. Русский</option>
+            <option value="es">8. Español</option>
+            <option value="tr">9. Türk</option>
+            <option value="nl">10. Nederlands</option>
+            <option value="it">11. Italiano</option>
+            <option value="pl">12. Polski</option>
+             <option value="ro">13. Român</option>
+             <option value="sv">14. Svensk</option>
+            <option value="vi">15. Việt</option>
+            <option value="th">16. ภาษาไทย</option>
+            <option value="zh-CN">17. 中文简体</option>
+            <option value="zh-TW">18. 中國傳統</option>
+            <option value="ko">19. 한국의</option>
+            <option value="ja">20. 日本人</option>
+            <option value="el">21. ελληνικά</option>
+            <option value="ts">22. தமிழ்</option>
+            <option value="hy">23. հայերեն</option>
+            <option value="bs">24. Bosanski</option>
+            <option value="ca">25. Català</option>
+            <option value="hr">26. Hrvatski</option>
+            <option value="dq">27. Dansk</option>
+            <option value="eo">28. Esperanto</option>
+            <option value="fi">29. Suomalainen</option>
+           <option value="ht">30. Haian kreyòl</option>
+           <option value="hu">31. Magyar</option>
+           <option value="is">32. Icelandic</option>
+           <option value="id">33. Indonesia</option>
+           <option value="la">34. Latinum</option>
+           <option value="lv">35. Latvijas</option>
+           <option value="mk">36. Македонски</option>
+           <option value="no">37. Norsk</option>
+           <option value="sr">38. Српски</option>
+           <option value="sk">39. Slovenský</option>
+           <option value="sw">40. Kiswahili</option>
+           <option value="cy">41. Cymraeg</option>
+           <option value="bn">42. Bengali</option>
+           <option value="gu">43. Gujarati</option>
+           <option value="kn">44. Kannada</option>
+           <option value="ml">45. Malayalam</option>
+           <option value="mr">46. Marathi</option>
+           <option value="pa">47. Punjabi</option>
+           <option value="ta">48. Tamil</option>
+           <option value="te">49. Telugu</option>
+           <option value="mai">50. Maithili</option>
+           <option value="mni">51. Manipuri</option>
+            <!-- Add more options as needed -->
+        </select>
+
+        <!-- Target Language Selection -->
+        <select id="target-language-selection">
+            <option value="en">1. English</option>
+            <option value="ar">2. العربية</option>
+            <option value="de">3. Deutsch</option>
+            <option value="fr">4. Français</option>
+            <option value="hi">5. हिंदी</option>
+            <option value="pt">6. Português</option>
+            <option value="ru">7. Русский</option>
+            <option value="es">8. Español</option>
+            <option value="tr">9. Türk</option>
+            <option value="nl">10. Nederlands</option>
+            <option value="it">11. Italiano</option>
+            <option value="pl">12. Polski</option>
+             <option value="ro">13. Român</option>
+             <option value="sv">14. Svensk</option>
+            <option value="vi">15. Việt</option>
+            <option value="th">16. ภาษาไทย</option>
+            <option value="zh-CN">17. 中文简体</option>
+            <option value="zh-TW">18. 中國傳統</option>
+            <option value="ko">19. 한국의</option>
+            <option value="ja">20. 日本人</option>
+            <option value="el">21. ελληνικά</option>
+            <option value="ts">22. தமிழ்</option>
+            <option value="hy">23. հայերեն</option>
+            <option value="bs">24. Bosanski</option>
+            <option value="ca">25. Català</option>
+            <option value="hr">26. Hrvatski</option>
+            <option value="dq">27. Dansk</option>
+            <option value="eo">28. Esperanto</option>
+            <option value="fi">29. Suomalainen</option>
+           <option value="ht">30. Haian kreyòl</option>
+           <option value="hu">31. Magyar</option>
+           <option value="is">32. Icelandic</option>
+           <option value="id">33. Indonesia</option>
+           <option value="la">34. Latinum</option>
+           <option value="lv">35. Latvijas</option>
+           <option value="mk">36. Македонски</option>
+           <option value="no">37. Norsk</option>
+           <option value="sr">38. Српски</option>
+           <option value="sk">39. Slovenský</option>
+           <option value="sw">40. Kiswahili</option>
+           <option value="cy">41. Cymraeg</option>
+           <option value="bn">42. Bengali</option>
+           <option value="gu">43. Gujarati</option>
+           <option value="kn">44. Kannada</option>
+           <option value="ml">45. Malayalam</option>
+           <option value="mr">46. Marathi</option>
+           <option value="pa">47. Punjabi</option>
+           <option value="ta">48. Tamil</option>
+           <option value="te">49. Telugu</option>
+           <option value="mai">50. Maithili</option>
+           <option value="mni">51. Manipuri</option>
+            <!-- Add more options as needed -->
+        </select>
+
+                    <!---->
+                        <button id="sendMessage" style="background-color: #f6f1eeef; border: none; 
+                        margin-left: 8px; padding: 4px 3px 2px 3px; margin-top: 8px; border-radius: 6px; cursor: pointer;"> 
+                        <i class=" fa my-2 mx-1 fa-paper-plane btn btn-outline-secondary btn-sm" aria-hidden="true" id="chat-icon-send" style="color: #232222; font-size: 25px; font-weight: bold;"></i> 
+                        </button>
+                    </div>
+                </div>
+                <!-- <div class="col-md-3  px-1 d-print-none mb-2 bg-white" style="border-radius:1%;margin-top:16px;" id='chat-pane' hidden>
+                    <div class="col-12 text-center h3 mb-3 mt-2">CHAT</div>
+                
+                    <div id='chat-messages' style="bottom: margin 40px;"></div>
+                
+                    <div class="mr-auto ml-auto mb-2 input-group">
+                        <label>        
+                            <input type="file" id="file" style="display: none;" onchange="selectFile(this.value)">   
+                            <i class="material-icons" style="font-size: 18px; color: #4f4f4f; float: left;
+                            margin-left: 10px; margin-top: 15px; transform: rotate(45deg); cursor: pointer;">&#xe226;</i> 
+                            </label>
+                            <input id="chat-input" type="text" class="form-control rounded-2 border-info" name="lname" placeholder="Type here ..."> 
+                            <button id="sendMessage" style="background-color: #f6f1eeef; border: none; 
+                            margin-left: 8px; padding: 4px 3px 2px 3px; margin-top: 8px; border-radius: 6px; cursor: pointer;"> 
+                            <i class=" fa my-2 mx-1 fa-paper-plane btn btn-outline-secondary btn-sm" aria-hidden="true" id="chat-icon-send" style="color: #232222; font-size: 25px; font-weight: bold;"></i> 
+                            </button>
+                        
+                    
+                        
+                    </div>
+                </div> -->
+                
+                
+                              
                 </div>
             </div>
         </div>
+        <script>
+            var ups=0;
+             function selectFile(val) { 
+        var filename = val.replace(/C:\\fakepath\\/i, ''); 
+        document.getElementById("chat-input").value = filename; 
+      ups=1;
+    }
+ 
+
+                // Close the modal when the user clicks anywhere outside of it
+                window.onclick = function(event) {
+                    if (event.target == document.getElementById('attendance-modal')) {
+                        $('#attendance-modal').modal('hide');
+                    }
+                }
+                document.getElementById('attendance-close').addEventListener('click', function() {
+                    $('#attendance-modal').modal('hide');
+                });
+                </script>
+
+        <script src="assets/js/webrtc-controller.js"></script>
+        
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+        
     </body>
 </html>

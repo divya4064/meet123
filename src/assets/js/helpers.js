@@ -43,11 +43,15 @@ export default {
     setUserNames(mapSocketWithNames){
         let current_users =  document.getElementById('videos').children;
         for(var i=0;i<current_users.length;i++){
-
+             
             if(current_users[i].children.length === 3){
                 let id_user = current_users[i].id;
                 let nameDiv = current_users[i].children[2];
                 nameDiv.innerHTML = `${mapSocketWithNames[id_user]}`;
+               
+                if(mapSocketWithNames[id_user] === undefined){
+                    nameDiv.innerHTML = "You";
+                }
                 
             }
         };
@@ -90,7 +94,7 @@ export default {
 
     // Check if audio/video devices present or not
     userMediaAvailable() {
-        return !!( navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia );
+        return !!( navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia|| navigator.moxGetUserMedia );
     },
 
     // return media devices to use local peer's video
@@ -155,7 +159,27 @@ export default {
     // ice servers, (stun and turn)
     getIceServer() {
         return {
-            iceServers: [{   urls: [ "stun:ss-turn1.xirsys.com" ]}, {   username: "Z46ZbXlnWdDcDAWg6IZrCklrRRm92na4qewvST5S_8l-Y436NIqAMu6THCAnEd38AAAAAGTPyOpkaXZ5YTQ1Njc4",   credential: "86921b32-3475-11ee-bb51-0242ac140004",   urls: [       "turn:ss-turn1.xirsys.com:80?transport=udp",       "turn:ss-turn1.xirsys.com:3478?transport=udp",       "turn:ss-turn1.xirsys.com:80?transport=tcp",       "turn:ss-turn1.xirsys.com:3478?transport=tcp",       "turns:ss-turn1.xirsys.com:443?transport=tcp",       "turns:ss-turn1.xirsys.com:5349?transport=tcp"   ]}]
+            iceServers: [{
+            
+                urls: //[ "stun:ss-turn1.xirsys.com" ]}, 
+                ["stun:stun.l.google.com:19302"]
+            },
+                // {   username: "Z46ZbXlnWdDcDAWg6IZrCklrRRm92na4qewvST5S_8l-Y436NIqAMu6THCAnEd38AAAAAGTPyOpkaXZ5YTQ1Njc4",   
+                // credential: "86921b32-3475-11ee-bb51-0242ac140004",   
+                // urls: [       "turn:ss-turn1.xirsys.com:80?transport=udp",       "turn:ss-turn1.xirsys.com:3478?transport=udp",       
+                // "turn:ss-turn1.xirsys.com:80?transport=tcp",       
+                // "turn:ss-turn1.xirsys.com:3478?transport=tcp",       
+                // "turns:ss-turn1.xirsys.com:443?transport=tcp",       
+                // "turns:ss-turn1.xirsys.com:5349?transport=tcp"   ]},
+                {
+                    
+                    credential: "muazkh",
+                    username: "webrtc@live.com",
+                    url: ["turn:numb.viagenie.ca" ]
+
+
+                    }
+            ]
         };
     },
 
@@ -210,7 +234,59 @@ export default {
 
         let colDiv = document.createElement( 'div' );
         colDiv.className = `col-10 card chat-card msg text-info ${ msgBg }`;
-        colDiv.innerHTML = `<b>${xssFilters.inHTMLData( data.msg ).autoLink( { class: "text-info" , target: "_blank", rel: "nofollow"})}</b>`;
+        //console.log((data.msg).substring(0,2));
+        if((data.msg).substring(0,2)==="<a"){
+            colDiv.innerHTML = `<b>${(data.msg)}</b>`;
+           // console.log("1");
+        }else{
+            function  translatetext(text1 , targetLanguage1){
+                console.log("inside translate" );
+                return new Promise((resolve, reject) =>{
+               const apiKey1 = 'AIzaSyCftHH6LgB6k0EVmVnapcY2X0jZkj74XCg';
+               const url1 = `https://translation.googleapis.com/language/translate/v2?key=${apiKey1}`;
+             const data1 = {
+                q: text1,
+                target: targetLanguage1
+            };
+            const options1 = {
+                method: 'POST',
+                body: JSON.stringify(data1),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            fetch(url1, options1)
+                .then(response => response.json())
+                .then(data => {
+                    // The translated text
+                    const translation = data.data.translations[0].translatedText;
+                    resolve(translation);
+                })
+                .catch(error => console.error('Error:', error));
+            }
+            )} 
+            if ( senderType === 'remote' ){
+            //let userPreferredLanguage = 'hi';
+            let languageDropdown = document.getElementById('source-language-selection-top');
+            let userPreferredLanguage = languageDropdown.value;
+            translatetext(data.msg, userPreferredLanguage).then(translatedText => {
+                console.log("translated text is " + translatedText);
+                colDiv.innerHTML = `<b>${xssFilters.inHTMLData(translatedText).autoLink({ class: "text-info", target: "_blank", rel: "nofollow"})}</b>`;
+                //let rowDiv = document.createElement( 'div' );
+               // rowDiv.className = `row ${ marginContent } ${ contentAlign } mb-2`;
+                 colDiv.appendChild( infoDiv );
+                // rowDiv.appendChild( colDiv );
+                // chatMsgDiv.appendChild( rowDiv );
+            }).catch(error => {
+                console.error('Error:', error);
+                colDiv.innerHTML = `<b>${xssFilters.inHTMLData( data.msg ).autoLink( { class: "text-info" , target: "_blank", rel: "nofollow"})}</b>`;
+            })
+        }else{
+
+            colDiv.innerHTML = `<b>${xssFilters.inHTMLData( data.msg ).autoLink( { class: "text-info" , target: "_blank", rel: "nofollow"})}</b>`;
+        }
+
+        }
 
         let rowDiv = document.createElement( 'div' );
         rowDiv.className = `row ${ marginContent } ${ contentAlign } mb-2`;
@@ -242,9 +318,7 @@ export default {
     replaceTrack( stream, recipientPeer ) {
         let sender = recipientPeer.getSenders ? recipientPeer.getSenders().find( s => s.track && s.track.kind === stream.kind ) : false;
 
-        if(sender){
-            sender.replaceTrack( stream );
-        }
+        sender ? sender.replaceTrack( stream ) : '';
     },
 
     // this adds effects to when we share the screen, for now

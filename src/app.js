@@ -1,18 +1,40 @@
 // to store names mapped with their socket Ids-->
+const {Translate} = require('@google-cloud/translate').v2
 var mapSocketWithNames = {};
 let adminOfRoom = {};
 var vote_counts = {} ;
 
-// #############################
+let onlineUsers = [];
 
+// #############################
+const fs=require('fs');
 
 // this is built on express Server
 
 let express = require( 'express' );
+// for server over ssl
+const chalk = require('chalk');
+const figlet = require('figlet');
+var ip = require("ip");
+
+
+const httpsOptions = {
+    key: fs.readFileSync('./key.pem'),
+    cert: fs.readFileSync('./cert.pem')
+     
+   
+ }
 let app = express();
+//let server = require('https').createServer(httpsOptions,app);
+//let socketio = require('socket.io')(server);
 let socketio = require( 'socket.io' );
 
+const port = process.env.PORT || 443;
 
+const expressServer = app.listen(port);
+const io = socketio(expressServer);
+//let io = require( 'socket.io' )( server ); //for ssl
+//server.listen( port );
 // database configs
 // Firebase App (the core Firebase SDK) is always required and
 // must be listed before other Firebase SDKs
@@ -24,6 +46,14 @@ require("firebase/firestore");
 require("firebase/database");
 
 var firebaseConfig = {
+    // apiKey: "AIzaSyAy51aw4heZf4N9OnKvNa2C5TFrJ9w03Do",
+    // authDomain: "engage-e4adf.firebaseapp.com",
+    // databaseURL: "https://engage-e4adf-default-rtdb.firebaseio.com",
+    // projectId: "engage-e4adf",
+    // storageBucket: "engage-e4adf.appspot.com",
+    // messagingSenderId: "64483244309",
+    // appId: "1:64483244309:web:7c611555bc4b918c72111c",
+    // measurementId: "G-63BZQQVVKM"
     apiKey: "AIzaSyBa8WlmLrL1x-ad80p6wQPnpvfz3_97Im8",
     authDomain: "video-calls-c780d.firebaseapp.com",
     databaseURL: "https://video-calls-c780d-default-rtdb.firebaseio.com",
@@ -32,6 +62,7 @@ var firebaseConfig = {
     messagingSenderId: "246075948760",
     appId: "1:246075948760:web:bd83f15f6d6f68a5c921ad",
     measurementId: "G-K1PDQVZNZQ"
+  
   };
 
 // Initialize Firebase
@@ -42,10 +73,7 @@ dbRef = db.ref();
 // Ends here
 
 
-const port = process.env.PORT || 443;
 
-const expressServer = app.listen(port);
-const io = socketio(expressServer);
 
 let path = require( 'path' );
 let favicon = require( 'serve-favicon' );
@@ -54,11 +82,24 @@ const { join } = require('path');
 const { isDate } = require('util');
 
 
+figlet('Video Call Started', function(err, data) {
+    if (err) {
+        console.log(chalk.red('Something went wrong...'));
+        console.dir(err);
+        return;
+    }
+    console.log(chalk.blue(data))
+    console.log(chalk.bgGreen.bold.black("https://"+ip.address()+":443\n\n"));
+});
+
+
 // View engine setup
 app.engine('html', require('ejs').renderFile);
 app.use( favicon( path.join( __dirname, 'favicon.ico' ) ) );
 app.use( '/assets', express.static( path.join( __dirname, 'assets' ) ) );
 app.use( '/src', express.static( path.join( __dirname, 'src' ) ) );
+app.use( '/upload', express.static( path.join( __dirname, 'upload' ) ) );
+
 
 var cookieParser = require('cookie-parser');
 app.use(cookieParser());
@@ -160,7 +201,16 @@ app.post('/signin', function(req,res){
 app.get('/dashboard',(req,res)=>{
     res.sendFile( __dirname + '/dashboard.html');
 });
+//
+// Add this new route
+// app.get('/attendance/:room', (req, res) => {
+//     const room = req.params.room;
 
+//     dbRef.child("attendance").child(room).once('value', (snapshot) => {
+//         const attendance = snapshot.val();
+//         res.json(attendance);
+//     });
+// });
 // homepage of our web app
 app.get('/',(req,res)=>{
     res.sendFile(__dirname+ '/homepage.html');
@@ -172,12 +222,30 @@ app.post('/joinRoom',(req,res)=>{
     res.redirect("/join?room=" + req.body.roomCode );
 });
 
+//return new row of onlineusers
+app.get('/onlineUsers', (req, res) => {
+    res.json(onlineUsers);
+});
 
+//setup rout for attendance data 
+app.get('/attendance/:room', (req, res) => {
+    const room = req.params.room;
+
+    dbRef.child("attendance").child(room).once('value', (snapshot) => {
+        const attendance = snapshot.val();
+        res.json(attendance);
+    });
+});
+
+//
 // main namespace for the meet functionality --------> 
 io.of( '/stream' ).on( 'connection', (socket)=>{
     socket.on( 'subscribe', ( data ) => {
 
         socket.join( data.socketId ); // only join the sockets, room will be joined once admin admits.
+        
+    
+        
 
         // at the beginning, subscribe to admin only 
         if(!socket.adapter.rooms[data.room]){
@@ -203,6 +271,59 @@ io.of( '/stream' ).on( 'connection', (socket)=>{
         // map name and socketID
         mapSocketWithNames[data.socketId] = data.username;
 
+        // add user details
+        onlineUsers.push(data);
+        
+        //attendence store in database
+        console.log(data.username);
+            console.log(Date.now());
+        // dbRef.child("attendance").child(data.room).child(data.socketId).update({
+        //    username: data.username,
+        //     joinedAt: Date.now()
+            
+        // })
+        dbRef.child(`attendance/${data.room}/${data.username}/joinTimes`).push(Date.now())
+        .catch(err => {
+            console.error('Error setting attendance:', err);
+        });
+
+        //when user leaves the meet
+        socket.on("disconnect",()=>{
+            // Track when a user leaves a meeting
+            // dbRef.child("attendance").child(data.room).child(data.socketId).update({
+            //     leftAt: Date.now()
+            // })
+            dbRef.child(`attendance/${data.room}/${data.username}/leaveTimes`).push(Date.now())
+            .catch(err => { 
+                console.error('Error setting attendance:', err);
+            });
+        });
+
+    });
+
+    // when user disconnects remove him from onlineUsers
+    // When a user disconnects, remove them from the online users list
+socket.on('disconnect', () => {
+     // Log the socket ID of the disconnected user
+
+    for(let i = 0; i < onlineUsers.length; i++){
+        if('/stream#'+onlineUsers[i].socketId === socket.id){
+            console.log('Removing user from onlineUsers:', onlineUsers[i]); // Log the user being removed
+            onlineUsers.splice(i, 1);
+            break;
+        }
+    }
+ //update atttendance in database
+    
+});
+    // file upload
+    app.post('/upload', (req, res) => {
+        const fileName = req.headers['file-name']; 
+        
+        req.on('data', (chunk) => { 
+           fs.appendFileSync(__dirname + '/upload/' + fileName, chunk); 
+       }) 
+       res.end('uploaded'); 
     });
 
     // if access is granted, the user can connect (here this socket, which replies is admin)
@@ -280,9 +401,15 @@ io.of( '/stream' ).on( 'connection', (socket)=>{
         io.of('/user').to(data.room).emit('chat',snd);
 
     } );
+    //FOR private-message
+    socket.on('private-message', (data) => {
+        socket.to(data.to).emit( 'chat', { sender: data.sender, msg: data.msg+' :Private-chat ' } );
+        console.log(data.to);
+    });
 
 
     // remove User Name from mapSocketWith Names 
+    // when user leaves the meet
     socket.on("removeMyName",(elemId)=>{
         if(mapSocketWithNames[elemId]){
             delete mapSocketWithNames[elemId];
@@ -291,6 +418,7 @@ io.of( '/stream' ).on( 'connection', (socket)=>{
 
     // send usernames to clients -->
     socket.on('UpdateNamesOfUsers',()=>{
+        //console.log(mapSocketWithNames);
         socket.emit('UpdateNamesOfUsers',mapSocketWithNames);
     });
 
@@ -308,18 +436,26 @@ io.of( '/stream' ).on( 'connection', (socket)=>{
         }
         
     });
+
+    //haind raise visibel for everyone
+    socket.on('handRaised', (data) => {
+        console.log(data.room);
+        socket.broadcast.to(data.room).emit('handRaised', data);
+    });
+    
+    
 });
 
 
 
-
-
-
 // user-dashboard namespace
+
 io.of('/user').on('connection',(socket)=>{
     
     let users = '';
     let room_details = '';
+    let room = '';
+   //let attendance = '';
 
     socket.on('subscribe',(data)=>{
 
@@ -327,20 +463,38 @@ io.of('/user').on('connection',(socket)=>{
  
         let usermail = data.usermail;
 
-        // send room details to the client
-        dbRef.child("users").once('value',(e)=>{
-            users = e.val();
-            socket.emit('user-rooms',users[usermail].rooms);
-        });
-
-        // send messages to the rooms
-        dbRef.child("rooms").once('value',(e)=>{
-            room_details = e.val();
-            
-        });
-        
+       // send room details to the client
+    dbRef.child("users").once('value')
+    .then(e => {
+        users = e.val();
+        socket.emit('user-rooms',users[usermail].rooms);
+    })
+    .catch(err => {
+        console.error('Error getting user rooms:', err);
     });
 
+// send messages to the rooms
+dbRef.child("rooms").once('value')
+    .then(e => {
+        room_details = e.val();
+    })
+    .catch(err => {
+        console.error('Error getting room details:', err);
+    });  
+    });
+
+    // Add this new event listener
+// socket.on('disconnect', () => {
+//     // Track when a user leaves a meeting
+//     dbRef.child("attendance").child(room).child(socketId).update({
+//         leftAt: Date.now()
+//     });
+// });
+//file upload
+
+
+
+//
     socket.on('get-room-chats',(roomName)=>{
         socket.emit('room-chat-details',{room:roomName,
                                         chats:room_details[roomName]});
@@ -367,6 +521,11 @@ io.of('/user').on('connection',(socket)=>{
         io.of('/stream').to(data.room).emit('chat',{ sender: data.sendername, msg: data.message });
     });
 
+
+    //whene user disconnects the room
+   
+
+    
+
+
 });
-
-

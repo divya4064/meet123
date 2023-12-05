@@ -1,0 +1,46 @@
+{
+ "getUserMedia": [
+  {
+   "audio": "{echoCancellation: {ideal: true}, noiseSuppression: {ideal: true}}",
+   "origin": "http://localhost:443",
+   "pid": 36740,
+   "request_id": 0,
+   "request_type": "getUserMedia",
+   "rid": 4517,
+   "timestamp": 1698995035413.294,
+   "video": ""
+  },
+  {
+   "audio_track_info": "id:a63ba05f-7280-4563-9450-bc9d9893d117 label:Default - Microphone Array (Intel® Smart Sound Technology for Digital Microphones)",
+   "pid": 36740,
+   "request_id": 0,
+   "request_type": "getUserMedia",
+   "rid": 4517,
+   "stream_id": "da4d0944-b471-405b-8df2-62a49d7bb2b1",
+   "timestamp": 1698995036532.537,
+   "video_track_info": "id:86d2b7cc-9cbd-442e-9b9b-3e796df13dcb label:Acer FHD User Facing (0408:4036)"
+  },
+  {
+   "audio": "{echoCancellation: {ideal: true}, noiseSuppression: {ideal: true}}",
+   "origin": "http://localhost:443",
+   "pid": 36740,
+   "request_id": 1,
+   "request_type": "getUserMedia",
+   "rid": 4517,
+   "timestamp": 1698996992175.472,
+   "video": ""
+  },
+  {
+   "audio_track_info": "id:22af05ba-2a90-44cf-9f3c-7fde5c21fed2 label:Default - Microphone Array (Intel® Smart Sound Technology for Digital Microphones)",
+   "pid": 36740,
+   "request_id": 1,
+   "request_type": "getUserMedia",
+   "rid": 4517,
+   "stream_id": "d415c2c4-9c6d-46c8-b055-1f0da94de84c",
+   "timestamp": 1698996992751.039,
+   "video_track_info": "id:6fe8368f-e282-4c13-a78e-510eb79f2dbc label:Acer FHD User Facing (0408:4036)"
+  }
+ ],
+ "PeerConnections": {},
+ "UserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
+}

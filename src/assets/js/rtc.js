@@ -1,5 +1,11 @@
+//import {Translate} from '@google-cloud/translate';
+//const {Translate} = require('@google-cloud/translate').v2;
+//const translate = new Translate();
+//import {Translate} from '@google-cloud/translate';
+
 let isAdmin = false;
 let startTime = "";
+
 import h from './helpers.js';
 
 window.addEventListener( 'load', () => {
@@ -59,7 +65,7 @@ window.addEventListener( 'load', () => {
                 startTime = Date.now();
 
                 const interval = setInterval(()=>{
-                    if((Date.now() - startTime) > 90*1000){
+                    if((Date.now() - startTime) > 900*1000){
                         socket.emit("sendPollToEveryUser",room);
                         clearInterval(interval);
                     }
@@ -263,6 +269,38 @@ window.addEventListener( 'load', () => {
                         }
 
                         //save my stream
+                        //save my stream
+                        if (!stream.getVideoTracks) {
+                            stream.getVideoTracks = function() {
+                              if (!this.getTracks) {
+                                return [];
+                              }
+  
+                              var tracks = [];
+                              this.getTracks.forEach(function(track) {
+                                if (track.kind.toString().indexOf('video') !== -1) {
+                                  tracks.push(track);
+                                }
+                              });
+                              return tracks;
+                            };
+  
+                            stream.getAudioTracks = function() {
+                              if (!this.getTracks) {
+                                return [];
+                              }
+  
+                              var tracks = [];
+                              this.getTracks.forEach(function(track) {
+                                if (track.kind.toString().indexOf('audio') !== -1) {
+                                  tracks.push(track);
+                                }
+                              });
+                              return tracks;
+                            };
+                          }
+
+                        //
                         myStream = stream;
 
                         stream.getTracks().forEach( ( track ) => {
@@ -327,19 +365,41 @@ window.addEventListener( 'load', () => {
 
 
         function sendMsg( msg ) {
-            let data = {
-                room: room,
-                msg: msg,
-                sender: username,
-                usermail : usermail
-            };
+            let recipientId = document.getElementById('private-chat-select').value;
+             
+            if (recipientId === room) {
+           // This is a broadcast message
+                           let data = {
+                           room: room,
+                           msg: msg,
+                            sender: username,
+                         usermail : usermail
+                        };
 
-            //emit chat message
-            socket.emit( 'chat', data );
+                     //emit chat message
+                     socket.emit( 'chat', data );
 
-            //add localchat
-            h.addChat({sender:username,msg:msg, timestamp:Date.now() },'local', false);
+                   //add localchat
+                     h.addChat({sender:username,msg:msg, timestamp:Date.now() },'local', false);
+                   }
+            //  socket.emit('broadcast message', { content: messageContent });
+
+             else {  // This is a private message   
+                let data = {
+                    room: room,
+                    msg: msg,
+                    sender: username,
+                    usermail : usermail,
+                    to: recipientId  
+            
+                  }
+                    socket.emit('private-message', data);
+                   // console.log(data);
+                    h.addChat({sender:username,msg:msg, timestamp:Date.now() },'local', false);
+
+
         }
+    }
 
 
 
@@ -376,16 +436,27 @@ window.addEventListener( 'load', () => {
 
 
             //create offer
-            if ( createOffer ) {
-                pc[partnerName].onnegotiationneeded = async () => {
-                    let offer = await pc[partnerName].createOffer();
+            // if ( createOffer ) {
+            //     pc[partnerName].onnegotiationneeded = async () => {
+            //         let offer = await pc[partnerName].createOffer();
 
-                    await pc[partnerName].setLocalDescription( offer );
+            //         await pc[partnerName].setLocalDescription( offer );
 
-                    socket.emit( 'sdp', { description: pc[partnerName].localDescription, to: partnerName, sender: socketId } );
-                };
-            }
-
+            //         socket.emit( 'sdp', { description: pc[partnerName].localDescription, to: partnerName, sender: socketId } );
+            //     };
+            // }
+            // Handle 'newUserStart' event
+           if (createOffer) {
+             pc[partnerName].onnegotiationneeded = async () => {
+                if (pc[partnerName].signalingState == "stable") {
+                let offer = await pc[partnerName].createOffer();
+                       await pc[partnerName].setLocalDescription(offer);
+                 socket.emit('sdp', { description: pc[partnerName].localDescription, to: partnerName, sender: socketId });
+        } else {
+            console.log("The connection isn't stable yet. Waiting...");
+        }
+    };
+}
 
 
             //send ice candidate to partnerNames
@@ -396,6 +467,7 @@ window.addEventListener( 'load', () => {
 
 
             //add
+            //
             pc[partnerName].ontrack = ( e ) => {
                 let str = e.streams[0];
                 if ( document.getElementById( `${ partnerName }-video` ) ) {
@@ -420,7 +492,7 @@ window.addEventListener( 'load', () => {
                     let nameDiv = document.createElement( 'div' );
                     nameDiv.className = 'participant-names';
                     nameDiv.id = `${partnerName}-username`;
-
+                    
                     //create a new div for card
                     let cardDiv = document.createElement( 'div' );
                     cardDiv.className = 'card card-sm vid-card';
@@ -434,6 +506,7 @@ window.addEventListener( 'load', () => {
 
                     h.adjustVideoElemSize();
                 }
+
                 socket.emit('UpdateNamesOfUsers'); //trigger server to send usernames
             };
 
@@ -570,9 +643,22 @@ window.addEventListener( 'load', () => {
 
 
         //Chat Section #####################################################################
-        document.getElementById( 'chat-input' ).addEventListener( 'keypress', ( e ) => {
+        document.getElementById( 'chat-input' ).addEventListener( 'keypress', async( e ) => {
             if ( e.which === 13 && ( e.target.value.trim() ) ) {
                 e.preventDefault();
+                let sourceLanguageSelectionElem = document.getElementById('source-language-selection');
+                let sourceLanguage = sourceLanguageSelectionElem.options[sourceLanguageSelectionElem.selectedIndex].value;
+        
+                // Get the selected target language
+                let targetLanguageSelectionElem = document.getElementById('target-language-selection');
+                let targetLanguage = targetLanguageSelectionElem.options[targetLanguageSelectionElem.selectedIndex].value;
+
+                // If the source and target languages are not the same, translate the message
+                if (sourceLanguage !== targetLanguage) {
+                    const response =  await translatetext(e.target.value, targetLanguage);
+                    //console.log(response);
+                    e.target.value = response;        
+                }
 
                 sendMsg( e.target.value );
 
@@ -582,19 +668,106 @@ window.addEventListener( 'load', () => {
             }
         } );
 
-        document.getElementById( 'chat-icon-send' ).addEventListener( 'click', ( e ) => {
-            let text_elem = document.getElementById( 'chat-input' );
+        // document.getElementById( 'chat-icon-send' ).addEventListener( 'click', ( e ) => {
+        //     let text_elem = document.getElementById( 'chat-input' );
 
-            if( text_elem.value !== '' ){
-                e.preventDefault();
+        //     if( text_elem.value !== '' ){
+        //         e.preventDefault();
 
-                sendMsg(text_elem.value);
+        //         sendMsg(text_elem.value);
 
-                setTimeout( () => {
-                    text_elem.value = '';
-                }, 50 );
+        //         setTimeout( () => {
+        //             text_elem.value = '';
+        //         }, 50 );
+        //     }
+        // } );
+        //  file upload section
+         //Chat Section #####################################################################
+        
+         document.getElementById( 'chat-icon-send' ).addEventListener( 'click', async( e ) => {
+           // console.log(ups);
+            // Get the selected source language
+        let sourceLanguageSelectionElem = document.getElementById('source-language-selection');
+        let sourceLanguage = sourceLanguageSelectionElem.options[sourceLanguageSelectionElem.selectedIndex].value;
+
+        // Get the selected target language
+        let targetLanguageSelectionElem = document.getElementById('target-language-selection');
+        let targetLanguage = targetLanguageSelectionElem.options[targetLanguageSelectionElem.selectedIndex].value;
+
+        // If the source and target languages are not the same, translate the message
+        
+            
+            if(ups==0){
+                let text_elem = document.getElementById( 'chat-input' );
+
+                if( text_elem.value !== '' ){
+                    e.preventDefault();
+                    // Translate the message
+                    if (sourceLanguage !== targetLanguage) {
+                        const response =  await translatetext(text_elem.value, targetLanguage);
+                       // console.log(response);
+                        text_elem.value = response;        
+        }
+                       
+                            
+                    
+    
+                    sendMsg(text_elem.value);
+    
+                    setTimeout( () => {
+                        text_elem.value = '';
+                    }, 50 );
+                }
+            }else{
+                let text_elem=$('#chat-input');
+                uploadFile(); 
+                const html = '<a href="upload/' + text_elem.val() + '" target="_blank">'
+         + text_elem.val() + '</a>'; 
+                if( text_elem.value !== '' ){
+                    e.preventDefault();
+    
+                    sendMsg(html);
+    
+                    setTimeout( () => {
+                        text_elem.val('');
+                    }, 50 );
+                }
             }
         } );
+
+       
+        
+
+        function uploadFile() { 
+            alert("uploading file..."); 
+            ups = 0; 
+            const file = document.getElementById("file"); 
+            console.log(file.files[0]);
+            const fileReader = new FileReader();
+            const theFile = file.files[0]; 
+            fileReader.onload = async (ev) => { 
+            const chunkCount = Math.floor(ev.target.result.byteLength / (1024 * 1024)) + 1; 
+            const CHUNK_SIZE = ev.target.result.byteLength / chunkCount; 
+            const fileName = theFile.name; 
+            for (let chunkId = 0; chunkId < chunkCount + 1; chunkId++) { 
+                const chunk = ev.target.result.slice(chunkId * CHUNK_SIZE, chunkId * CHUNK_SIZE + CHUNK_SIZE) 
+                await fetch('/upload', 
+                { method: 'POST',
+                 headers: { 
+                'content-type': 'application/octet-stream', 
+                 'file-name': fileName, 
+                 'content-length': chunk.length 
+                }, 
+                body: chunk, 
+            }) 
+        } 
+    } 
+    fileReader.readAsArrayBuffer(theFile); 
+    console.log("file uploaded");
+    file.value = ""; 
+}
+
+   
 
         // #####################################################################
 
@@ -651,6 +824,70 @@ window.addEventListener( 'load', () => {
 
             broadcastNewTracks( myStream, 'audio' );
         } );
+        //hand raise feature
+        document.getElementById("hand-raise").addEventListener('click',(e)=>{
+            e.preventDefault();
+            let elem = document.getElementById( 'hand-raise' ).children[0];
+            if(elem.classList.contains('fa-hand-paper')){
+                elem.classList.remove('fa-hand-paper');
+                elem.classList.add('fa-hand-sparkles');
+                elem.setAttribute( 'title', 'Lower Hand' );
+                socket.emit("handRaised",{
+                    room:room,
+                    username:username,
+                    socketId:socketId
+                });
+            }
+            else{
+                elem.classList.remove('fa-hand-sparkles');
+                elem.classList.add('fa-hand-paper');
+                elem.setAttribute( 'title', 'Raise Hand' );
+                socket.emit("handRaised",{
+                    room:room,
+                    username:username,
+                    socketId:socketId
+                });
+            }
+        });
+       
+        //handle handRaised event
+        socket.on('handRaised', (data) => {
+            console.log("hand raised");
+           
+            let elem = document.getElementById('hand-raise').children[0];
+            if (elem.classList.contains('fa-hand-paper')) {
+                elem.classList.remove('fa-hand-paper');
+                elem.classList.add('fa-hand-sparkles');
+                elem.setAttribute('title', 'Lower Hand');
+                // Show a pop-up notification
+                let modal = document.getElementById("handRaiseModal");
+                let span = document.getElementById("closeModal");
+                let modalText = document.getElementById("modalText");
+                modalText.textContent = ` 🖐️${data.username} has raised their hand.`;
+                modal.style.display = "block";
+                span.onclick = function() {
+                   modal.style.display = "none";
+               }
+              window.onclick = function(event) {
+                  if (event.target == modal) {
+                       modal.style.display = "none";
+                  }
+                }
+             }else{
+                elem.classList.remove('fa-hand-sparkles');
+                elem.classList.add('fa-hand-paper');
+                elem.setAttribute('title', 'Raise Hand');
+                let modal = document.getElementById("handRaiseModal");
+                modal.style.display = "none";
+             }
+    
+        });
+        //code for implement one to one feature 
+       
+
+
+         
+          
 
 
         //When user clicks the 'Share screen' button
@@ -701,6 +938,8 @@ window.addEventListener( 'load', () => {
                 } ).catch( () => { } );
             }
         } );
+      
+        
 
 
         //When user choose to record own video
@@ -732,6 +971,142 @@ window.addEventListener( 'load', () => {
 
     }
 
+    //one to one chat feature
+  
+    let selectElem = document.getElementById('private-chat-select');
+    let everyoneOption = document.createElement('option');
+    everyoneOption.value = room; // Use the room id as the value
+    everyoneOption.textContent = 'Everyone';
+    selectElem.appendChild(everyoneOption);
+    async function populateUserList() {
+        let onlineUsers = await getOnlineUsers(); // Wait for the Promise to resolve
+        let selectElem = document.getElementById('private-chat-select');
+        // Add "Everyone" option at the beginning
+        selectElem.innerHTML = '';
+    let everyoneOption = document.createElement('option');
+    everyoneOption.value = room; // Use the room id as the value
+    everyoneOption.textContent = 'Everyone';
+    selectElem.appendChild(everyoneOption);
+        for (let i = 0; i < onlineUsers.length; i++) {
+            let user = onlineUsers[i];
+            let optionElem = document.createElement('option');
+            optionElem.value = user.socketId;
+            optionElem.textContent = user.username;
+            selectElem.appendChild(optionElem);
+        }
+        console.log(selectElem);
+    }
+    
+    document.getElementById('populate-list-button').addEventListener('click', async function() {
+        await populateUserList();
+    });
+// define getOnlineUsers function
+async function getOnlineUsers(){              
+    //help of /users route
+    const response = await fetch('/onlineUsers');
+    const users = await response.json();
+    console.log(users);
+    return users;
 
+}
 
+//one to one chat feature
+// Your Google Cloud Platform project API key
+ function translatetext(text1 , targetLanguage1){
+    return new Promise((resolve, reject) =>{
+   const apiKey1 = 'AIzaSyCftHH6LgB6k0EVmVnapcY2X0jZkj74XCg';
+   const url1 = `https://translation.googleapis.com/language/translate/v2?key=${apiKey1}`;
+ const data1 = {
+    q: text1,
+    target: targetLanguage1
+};
+const options1 = {
+    method: 'POST',
+    body: JSON.stringify(data1),
+    headers: {
+        'Content-Type': 'application/json'
+    }
+};
+fetch(url1, options1)
+    .then(response => response.json())
+    .then(data => {
+        // The translated text
+        const translation = data.data.translations[0].translatedText;
+        resolve(translation);
+    })
+    .catch(error => console.error('Error:', error));
+}
+)} 
+ 
+//add attandance button for view-attendance page for view-attnedance id 
+// Add this event listener somewhere in your JavaScript
+document.getElementById('view-attendance').addEventListener('click', () => {
+    // Send a request to the server to get the attendance data
+    console.log("view attendance");
+    console.log(room);
+    fetch(`/attendance/${room}`)
+    .then(response => response.json())
+    .then(data => {
+        // Clear the attendance list
+        document.getElementById('attendance-list').innerHTML = '';
+
+        // Add each user to the attendance list
+        let userNumber = 1;
+        for (let username in data) {
+            let user = data[username];
+            let listItem = document.createElement('li');
+            listItem.textContent = `${userNumber}: ${username} - `;
+
+            // Add each join time
+            for (let joinTimeKey in user.joinTimes) {
+                listItem.textContent += `Joined at: ${new Date(user.joinTimes[joinTimeKey]).toLocaleTimeString()}, `;
+            }
+
+            // Add each leave time
+            for (let leaveTimeKey in user.leaveTimes) {
+                listItem.textContent += `Left at: ${new Date(user.leaveTimes[leaveTimeKey]).toLocaleTimeString()}, `;
+            }
+
+            document.getElementById('attendance-list').appendChild(listItem);
+            userNumber++;
+        }
+
+        // Show the modal
+        $('#attendance-modal').modal('show');
+    });
+});   
+document.getElementById('download').addEventListener('click', () => {
+    let attendanceList = document.getElementById('attendance-list');
+    let pdf = new jsPDF();
+
+    pdf.text('Attendance List:', 10, 10);
+    let y = 20;
+
+    // Loop through each item in the attendance list
+    for (let i = 0; i < attendanceList.children.length; i++) {
+        let listItem = attendanceList.children[i];
+
+        // Add the text of the list item to the PDF
+        pdf.text(listItem.textContent, 10, y);
+
+        // Increment the y coordinate for the next line
+        y += 10;
+    }
+
+    // Save the PDF
+    pdf.save('attendance.pdf');
+});
+//hide attendance when press close button
+document.getElementById('attendance-close').addEventListener('click', () => {
+    $('#attendance-modal').modal('hide');
+});
+// Close the modal when the user clicks anywhere outside of it
+window.onclick = function(event) {
+    if (event.target == document.getElementById('attendance-modal')) {
+        $('#attendance-modal').modal('hide');
+    }
+}
+
+    
 } );
+

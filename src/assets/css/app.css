@@ -26,7 +26,7 @@
 }
 
 #chat-messages{
-    height: 68.5vh;
+    height: 63vh;
     margin-bottom: 20px;
     overflow-x: hidden;
     overflow-y: auto;
@@ -485,3 +485,203 @@ width: 100%; }
     left: 50%;
     transform: translate(-50%, -50%); 
     z-index: 300000;}
+
+::-webkit-scrollbar { width: 10px; } 
+ 
+
+#chat-input::-webkit-scrollbar { width: 0px; }  
+
+.handRaiseNotification {
+    display: flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    animation: fadeOut 5s forwards;
+}
+
+.handRaiseNotification img {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+}
+
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #2c2626;
+    margin: 2% auto;
+    margin-right:10%;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 25%;
+    height: 14%;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-header {
+    padding: 0px 1px;
+    background-color: #1f2121;
+    color: white;
+    margin-top: -20px;
+}
+
+.modal-body {padding: 2px 16px;}
+
+#populate-list-button {
+    background-color: #4CAF50; /* Green background */
+    border: none; /* Remove border */
+    color: white; /* White text color */
+    padding: 15px 32px; /* Some padding */
+    text-align: center; /* Centered text */
+    text-decoration: none; /* Remove underline */
+    display: inline-block;
+    font-size: 16px; /* Increase font size */
+    margin: 4px 2px;
+    cursor: pointer; /* Cursor on hover */
+    transition: 0.3s; /* Animation to happen */
+}
+
+#populate-list-button:hover {
+    background-color: #45a049; /* Darker green on hover */
+    transform: scale(1.1); /* Slightly increase the size */
+}
+
+#private-chat-select {
+    width: 200px; /* Width of select element */
+    padding: 10px; /* Some padding */
+    border: 1px solid #ccc; /* Gray border */
+    border-radius: 4px; /* Rounded borders */
+    box-sizing: border-box; /* Make sure that padding and width stays in place */
+    margin-top: 6px; /* Add a top margin */
+    margin-bottom: 16px; /* Bottom margin */
+    resize: vertical; /* Allow the user to vertically resize the textarea (not horizontally) */
+    font-size: 16px; /* Increase font size */
+    transition: 0.3s; /* Animation to happen */
+}
+
+#private-chat-select:hover {
+    border-color: #45a049; /* Darker green on hover */
+    transform: scale(1.1); /* Slightly increase the size */
+}
+#source-language-selection {
+   
+        width: 15%;
+        height: 8%;
+        padding: 2px;
+        margin: 1px 4px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        background-color: #f8f8f8;
+        font-size: 10px;
+    
+ }
+ #target-language-selection {
+        width: 15%;
+        height: 8%;
+        padding: 2px;
+        margin: 2px 4px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        background-color: #f8f8f8;
+        font-size: 10px;
+    }  
+ #chat-input {
+        padding: 5px;
+        border-radius: 10px;
+        margin-right: 2px;
+        margin-left: 2px;
+} 
+#attendance-modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 30%;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 80%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+   
+}
+
+.modal-content1 {
+    background-color: #3c3535;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    overflow-y: scroll; /* Enable vertical scrolling */
+    /* add scrolling option */
+
+}
+
+.close1 {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    overflow-y: auto;
+    /* arrow as pointer */
+    cursor: pointer;
+}
+
+.close1:hover,
+.close1:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-dialog1 {
+    max-width: 50%;
+}
+.modal-header1 {
+    padding: 2px 16px;
+    background-color: #5cb85c;
+    color: rgb(29, 144, 104);
+}
+
+.modal-body1 {
+    padding: 2px 16px;
+    max-height: 1000px; /* Adjust this value according to your needs */
+    overflow-y: auto; /* Enable vertical scrolling */
+}
+.modal-footer1 {
+    padding: 2px 16px;
+    background-color: #5cb85c;
+    color: rgb(145, 54, 54);
+}
